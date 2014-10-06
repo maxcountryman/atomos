@@ -55,6 +55,7 @@ swap to safely mututate our state:
 >>> def new_client(cur_state, client):
 ...     cur_state['conns'] += 1
 ...     cur_state['active_clients'].add(client)
+...     return cur_state
 >>> state.swap(new_client, 'foo')
 ```
 
