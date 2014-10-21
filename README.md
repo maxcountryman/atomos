@@ -1,6 +1,8 @@
 # Atomos
 **Atomic primitives for Python.**
 
+[![Circle CI](https://circleci.com/gh/maxcountryman/atomos.png?style=badge)](https://circleci.com/gh/maxcountryman/atomos)
+
 Atomos is a library of atomic primitives, inspired by Java's
 java.util.concurrent.atomic. It provides atomic types for bools, ints, longs,
 and floats as well as a generalized object wrapper. In addition, it introduces
