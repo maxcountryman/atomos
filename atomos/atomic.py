@@ -5,7 +5,6 @@ atomos.atomic
 Atomic primitives.
 '''
 
-import copy
 import types
 
 import atomos.util as util
@@ -49,7 +48,7 @@ class AtomicReference(object):
         :param value: The value to set.
         '''
         with self._lock.exclusive:
-            oldval = copy.deepcopy(self._value)
+            oldval = self._value
             self._value = value
             return oldval
 
