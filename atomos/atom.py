@@ -6,7 +6,6 @@ Atom data type.
 '''
 
 import collections
-import copy
 
 import atomos.atomic as atomic
 import atomos.util as util
@@ -46,7 +45,9 @@ class ARef(object):
         Adds `key` to the watches dictionary with the value `fn`.
 
         :param key: The key for this watch.
-        :param fn: The value for this watch, should be a function.
+        :param fn: The value for this watch, should be a function. Note that
+        this function will be passed values which should not be mutated wihtout
+        copying as other watches may in turn be passed the same reference!
         '''
         self._watches[key] = fn
 
@@ -65,14 +66,13 @@ class ARef(object):
         passing along its respective key and the reference to this object.
 
         :param oldval: The old value which will be passed to the watch.
-        :param newval: The new value which will be passed to the watch,
+        :param newval: The new value which will be passed to the watch.
         '''
         watches = self._watches.copy()
-        if len(watches) > 0:
-            for k in watches:
-                fn = watches[k]
-                if isinstance(fn, collections.Callable):
-                    fn(k, self, copy.deepcopy(oldval), copy.deepcopy(newval))
+        for k in watches:
+            fn = watches[k]
+            if isinstance(fn, collections.Callable):
+                fn(k, self, oldval, newval)
 
 
 class Atom(ARef):
@@ -156,13 +156,14 @@ class Atom(ARef):
         of the atom. Returns the new value.
 
         :param fn: A function which will be passed the current state. Should
-        return a new state.
+        return a new state. This absolutely MUST NOT mutate the reference to
+        the current state! If it does, this function map loop indefinitely.
         :param \*args: Arguments to be passed to `fn`.
         :param \*\*kwargs: Keyword arguments to be passed to `fn`.
         '''
         while True:
             oldval = self.deref()
-            newval = fn(copy.deepcopy(oldval), *args, **kwargs)
+            newval = fn(oldval, *args, **kwargs)
             if self._state.compare_and_set(oldval, newval):
                 self.notify_watches(oldval, newval)
                 return newval
