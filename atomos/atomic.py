@@ -7,7 +7,12 @@ Atomic primitives.
 
 import types
 
+import six
+
 import atomos.util as util
+
+if six.PY3:
+    long = int
 
 
 class AtomicReference(object):
@@ -157,7 +162,7 @@ class AtomicInteger(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always an int.
-        if name == '_value' and not isinstance(value, types.IntType):
+        if name == '_value' and not isinstance(value, int):
             raise TypeError('_value must be of type int')
 
         super(AtomicInteger, self).__setattr__(name, value)
@@ -172,7 +177,7 @@ class AtomicLong(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a long.
-        if name == '_value' and not isinstance(value, types.LongType):
+        if name == '_value' and not isinstance(value, long):
             raise TypeError('_value must be of type long')
 
         super(AtomicLong, self).__setattr__(name, value)
@@ -187,7 +192,7 @@ class AtomicFloat(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a float.
-        if name == '_value' and not isinstance(value, types.FloatType):
+        if name == '_value' and not isinstance(value, float):
             raise TypeError('_value must be of type float')
 
         super(AtomicFloat, self).__setattr__(name, value)
