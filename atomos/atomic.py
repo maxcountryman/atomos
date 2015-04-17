@@ -162,7 +162,7 @@ class AtomicInteger(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always an int.
-        if name == '_value' and not isinstance(value, int):
+        if name == '_value' and not isinstance(value, types.IntType):
             raise TypeError('_value must be of type int')
 
         super(AtomicInteger, self).__setattr__(name, value)
@@ -192,7 +192,7 @@ class AtomicFloat(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a float.
-        if name == '_value' and not isinstance(value, float):
+        if name == '_value' and not isinstance(value, types.FloatType):
             raise TypeError('_value must be of type float')
 
         super(AtomicFloat, self).__setattr__(name, value)
