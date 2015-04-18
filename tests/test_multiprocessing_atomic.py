@@ -10,22 +10,20 @@ import pytest
 import atomos.multiprocessing.atomic
 
 
-"""
 @pytest.fixture
 def atomic_reference():
     return atomos.multiprocessing.atomic.AtomicReference({})
-"""
 
 
 @pytest.fixture
 def atomic_number():
     class TestNumber(atomos.multiprocessing.atomic.AtomicNumber):
         def __init__(self, value=0):
-            super(TestNumber, self).__init__(typecode='i', value=value)
+            super(TestNumber, self).__init__(typecode_or_type='i', value=value)
 
     return TestNumber()
 
-"""
+
 def test_atomic_reference_get(atomic_reference):
     assert atomic_reference.get() == {}
 
@@ -46,7 +44,6 @@ def test_atomic_reference_get_and_set(atomic_reference):
 def test_atomic_reference_compare_and_set(atomic_reference):
     assert atomic_reference.compare_and_set({}, {'foo': 'bar'}) is True
     assert atomic_reference.compare_and_set({}, {'foo', 'bar'}) is False
-"""
 
 
 def test_atomic_number_add_and_get(atomic_number):
