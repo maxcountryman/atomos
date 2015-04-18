@@ -162,7 +162,7 @@ class AtomicInteger(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always an int.
-        if name == '_value' and not isinstance(value, types.IntType):
+        if name == '_value' and not isinstance(value, int):
             raise TypeError('_value must be of type int')
 
         super(AtomicInteger, self).__setattr__(name, value)
