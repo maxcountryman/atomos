@@ -4,9 +4,10 @@ atomos.util
 
 Utility functions.
 '''
-
+from __future__ import absolute_import
 import functools
 import threading
+import multiprocessing
 
 
 def repr(module, instance, value):
@@ -77,9 +78,19 @@ class ReadersWriterLock(object):
     fact an attempt to acquire it will block until all the readers have
     released the lock.
     '''
-    def __init__(self):
-        self._reader_lock = threading.Lock()
-        self._writer_lock = threading.Lock()
+    def __init__(self, use_multiprocessing=False):
+        '''
+        Readers writer lock
+
+        :param use_multiprocessing: Use multiprocessing instead threading.
+        '''
+        if use_multiprocessing:
+            self._reader_lock = multiprocessing.Lock()
+            self._writer_lock = multiprocessing.Lock()
+        else:
+            self._reader_lock = threading.Lock()
+            self._writer_lock = threading.Lock()
+
         self._reader_count = 0
 
         class SharedLock(object):
