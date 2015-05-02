@@ -101,7 +101,7 @@ Now it works with [multiprocessing](https://docs.python.org/3.4/library/multipro
 
 Just use the following import path:
 
-```
+```python
 import atomos.multiprocessing.atomic
 ```
 
