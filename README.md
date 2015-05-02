@@ -97,9 +97,13 @@ So long as we interact with the `MyState` instance via the `state` wrapper, our
 updates will always be protected.
 
 ## Multiprocessing
-Please note that at this time these data structures will not play nice with
-multiprocessing. This is due to the fact that state-sharing between processes
-generally requires pickle-able objects.
+Now it works with [multiprocessing](https://docs.python.org/3.4/library/multiprocessing.html).
+
+Just use the following import path:
+
+```
+import atomos.multiprocessing.atomic
+```
 
 ## Contribution
 Contributions are welcome, please ensure PEP8 is followed and that new code is
