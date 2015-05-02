@@ -93,7 +93,6 @@ def test_readers_writer_lock(acquire_shared_count=10):
     assert lock._reader_count == 1
 
 
-# TODO: Make this test pass
 def test_readers_writer_lock_multiprocessing(acquire_shared_count=10):
     lock = atomos.util.ReadersWriterLockMultiprocessing()
 
