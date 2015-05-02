@@ -27,7 +27,7 @@ class AtomicReference(ThreadedAtomicReference):
     '''
     def __init__(self, value=None):
         super(AtomicReference, self).__init__(value=value)
-        self._lock = util.ReadersWriterLock(use_multiprocessing=True)
+        self._lock = util.ReadersWriterLockMultiprocessing()
 
 
 class AtomicCtypesReference(object):

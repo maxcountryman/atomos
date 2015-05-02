@@ -95,12 +95,12 @@ def test_readers_writer_lock(acquire_shared_count=10):
 
 # TODO: Make this test pass
 def test_readers_writer_lock_multiprocessing(acquire_shared_count=10):
-    lock = atomos.util.ReadersWriterLock(use_multiprocessing=True)
+    lock = atomos.util.ReadersWriterLockMultiprocessing()
 
     for _ in range(acquire_shared_count):
         lock.shared.acquire()
 
-    assert lock._reader_count == acquire_shared_count
+    assert lock._reader_count.value == acquire_shared_count
 
     # Cannot acquire an exclusive lock with active readers.
     p = multiprocessing.Process(target=lock.exclusive.acquire)
@@ -113,7 +113,7 @@ def test_readers_writer_lock_multiprocessing(acquire_shared_count=10):
     for _ in range(acquire_shared_count):
         lock.shared.release()
 
-    assert lock._reader_count == 0
+    assert lock._reader_count.value == 0
 
     p.join()
 
@@ -149,4 +149,4 @@ def test_readers_writer_lock_multiprocessing(acquire_shared_count=10):
     p.join()
 
     assert p.is_alive() is False
-    assert lock._reader_count == 1
+    assert lock._reader_count.value == 1
