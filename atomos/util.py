@@ -4,9 +4,10 @@ atomos.util
 
 Utility functions.
 '''
-
+from __future__ import absolute_import
 import functools
 import threading
+from multiprocessing import Value, Lock
 
 
 def repr(module, instance, value):
@@ -80,6 +81,7 @@ class ReadersWriterLock(object):
     def __init__(self):
         self._reader_lock = threading.Lock()
         self._writer_lock = threading.Lock()
+
         self._reader_count = 0
 
         class SharedLock(object):
@@ -109,6 +111,83 @@ class ReadersWriterLock(object):
                     self._reader_count -= 1
                 finally:
                     if self._reader_count == 0:
+                        self._writer_lock.release()
+
+                    self._reader_lock.release()
+
+            def __enter__(inner):
+                inner.acquire()
+                return inner
+
+            def __exit__(inner, exc_value, exc_type, tb):
+                inner.release()
+
+        self.shared = SharedLock()
+
+        class ExclusiveLock(object):
+            def acquire(inner):
+                '''
+                Acquires the exclusive lock, prevents acquisition of the shared
+                lock.
+                '''
+                self._writer_lock.acquire()
+
+            def release(inner):
+                '''
+                Releases the exclusive lock, allows acquistion of the shared
+                lock.
+                '''
+                self._writer_lock.release()
+
+            def __enter__(inner):
+                inner.acquire()
+                return inner
+
+            def __exit__(inner, exc_value, exc_type, tb):
+                inner.release()
+
+        self.exclusive = ExclusiveLock()
+
+
+class ReadersWriterLockMultiprocessing(object):
+    '''
+    A readers-writer lock multiprocessing.
+
+    Works like ReadersWriterLock but uses multiprocessing Lock and Value.
+    '''
+    def __init__(self):
+        self._reader_lock = Lock()
+        self._writer_lock = Lock()
+
+        self._reader_count = Value('i')
+
+        class SharedLock(object):
+            def acquire(inner):
+                '''
+                Acquires the shared lock, prevents acquisition of the exclusive
+                lock.
+                '''
+                self._reader_lock.acquire()
+
+                if self._reader_count.value == 0:
+                    self._writer_lock.acquire()
+
+                try:
+                    self._reader_count.value += 1
+                finally:
+                    self._reader_lock.release()
+
+            def release(inner):
+                '''
+                Releases the shared lock, allows acquisition of the exclusive
+                lock.
+                '''
+                self._reader_lock.acquire()
+
+                try:
+                    self._reader_count.value -= 1
+                finally:
+                    if self._reader_count.value == 0:
                         self._writer_lock.release()
 
                     self._reader_lock.release()

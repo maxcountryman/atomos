@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 '''
-atomos.atomic
+atomos.multiprocessing.atomic
 
-Atomic primitives.
+Atomic primitives multiprocessing.
 '''
 
 import types
+import ctypes
+from multiprocessing import Value
 
 import six
 
 import atomos.util as util
+from atomos.atomic import AtomicReference as ThreadedAtomicReference
 
 if six.PY3:
     long = int
 
 
-class AtomicReference(object):
+class AtomicReference(ThreadedAtomicReference):
     '''
     A reference to an object which allows atomic manipulation semantics.
 
@@ -23,18 +26,39 @@ class AtomicReference(object):
     be manipulated atomically.
     '''
     def __init__(self, value=None):
-        self._value = value
-        self._lock = util.ReadersWriterLock()
+        super(AtomicReference, self).__init__(value=value)
+        self._lock = util.ReadersWriterLockMultiprocessing()
+
+
+class AtomicCtypesReference(object):
+    '''
+    A reference to an object which allows atomic manipulation semantics.
+
+    AtomicCtypesReferences are particularlly useful when an object cannot
+    otherwise be manipulated atomically.
+
+    This only support ctypes data types.
+    https://docs.python.org/3.4/library/ctypes.html#fundamental-data-types
+    '''
+    def __init__(self, typecode_or_type=None, value=None):
+        '''
+        Atomic reference
+
+        :param typecode_or_type: The type of object allocated from shared memory.
+        :param value: The default value.
+        '''
+        self._typecode_or_type = typecode_or_type
+        self._reference = Value(self._typecode_or_type, value)
 
     def __repr__(self):
-        return util.repr(__name__, self, self._value)
+        return util.repr(__name__, self, self._reference)
 
     def get(self):
         '''
         Returns the value.
         '''
-        with self._lock.shared:
-            return self._value
+        with self._reference.get_lock():
+            return self._reference.value
 
     def set(self, value):
         '''
@@ -42,8 +66,8 @@ class AtomicReference(object):
 
         :param value: The value to set.
         '''
-        with self._lock.exclusive:
-            self._value = value
+        with self._reference.get_lock():
+            self._reference.value = value
             return value
 
     def get_and_set(self, value):
@@ -52,9 +76,9 @@ class AtomicReference(object):
 
         :param value: The value to set.
         '''
-        with self._lock.exclusive:
-            oldval = self._value
-            self._value = value
+        with self._reference.get_lock():
+            oldval = self._reference.value
+            self._reference.value = value
             return oldval
 
     def compare_and_set(self, expect, update):
@@ -66,27 +90,28 @@ class AtomicReference(object):
         :param update: The value to set if and only if `expect` equals the
         current value.
         '''
-        with self._lock.exclusive:
-            if self._value == expect:
-                self._value = update
+        with self._reference.get_lock():
+            if self._reference.value == expect:
+                self._reference.value = update
                 return True
 
             return False
 
 
-class AtomicBoolean(AtomicReference):
+class AtomicBoolean(AtomicCtypesReference):
     '''
     A boolean value whichs allows atomic manipulation semantics.
     '''
     def __init__(self, value=False):
-        super(AtomicBoolean, self).__init__(value=value)
+        super(AtomicBoolean, self).__init__(typecode_or_type=ctypes.c_bool,
+                                            value=value)
 
     # We do not need a locked get since a boolean is not a complex data type.
     def get(self):
         '''
         Returns the value.
         '''
-        return self._value
+        return self._reference.value
 
     def __setattr__(self, name, value):
         # Ensure the `value` attribute is always a bool.
@@ -96,7 +121,7 @@ class AtomicBoolean(AtomicReference):
         super(AtomicBoolean, self).__setattr__(name, value)
 
 
-class AtomicNumber(AtomicReference):
+class AtomicNumber(AtomicCtypesReference):
     '''
     AtomicNumber object super type.
 
@@ -107,7 +132,7 @@ class AtomicNumber(AtomicReference):
         '''
         Returns the value.
         '''
-        return self._value
+        return self._reference.value
 
     def add_and_get(self, delta):
         '''
@@ -115,9 +140,9 @@ class AtomicNumber(AtomicReference):
 
         :param delta: The delta to add.
         '''
-        with self._lock.exclusive:
-            self._value += delta
-            return self._value
+        with self._reference.get_lock():
+            self._reference.value += delta
+            return self._reference.value
 
     def get_and_add(self, delta):
         '''
@@ -125,9 +150,9 @@ class AtomicNumber(AtomicReference):
 
         :param delta: The delta to add.
         '''
-        with self._lock.exclusive:
-            oldval = self._value
-            self._value += delta
+        with self._reference.get_lock():
+            oldval = self._reference.value
+            self._reference.value += delta
             return oldval
 
     def subtract_and_get(self, delta):
@@ -136,9 +161,9 @@ class AtomicNumber(AtomicReference):
 
         :param delta: The delta to subtract.
         '''
-        with self._lock.exclusive:
-            self._value -= delta
-            return self._value
+        with self._reference.get_lock():
+            self._reference.value -= delta
+            return self._reference.value
 
     def get_and_subtract(self, delta):
         '''
@@ -147,9 +172,9 @@ class AtomicNumber(AtomicReference):
 
         :param delta: The delta to subtract.
         '''
-        with self._lock.exclusive:
-            oldval = self._value
-            self._value -= delta
+        with self._reference.get_lock():
+            oldval = self._reference.value
+            self._reference.value -= delta
             return oldval
 
 
@@ -158,7 +183,8 @@ class AtomicInteger(AtomicNumber):
     An integer value which allows atomic manipulation semantics.
     '''
     def __init__(self, value=0):
-        super(AtomicInteger, self).__init__(value=value)
+        super(AtomicInteger, self).__init__(typecode_or_type=ctypes.c_int,
+                                            value=value)
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always an int.
@@ -173,7 +199,8 @@ class AtomicLong(AtomicNumber):
     A long value which allows atomic manipulation semantics.
     '''
     def __init__(self, value=long(0)):
-        super(AtomicLong, self).__init__(value=value)
+        super(AtomicLong, self).__init__(typecode_or_type=ctypes.c_long,
+                                         value=value)
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a long.
@@ -188,11 +215,12 @@ class AtomicFloat(AtomicNumber):
     A float value which allows atomic manipulation semantics.
     '''
     def __init__(self, value=float(0)):
-        super(AtomicFloat, self).__init__(value=value)
+        super(AtomicFloat, self).__init__(typecode_or_type=ctypes.c_float,
+                                          value=value)
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a float.
-        if name == '_value' and not isinstance(value, types.FloatType):
+        if name == '_value' and not isinstance(value, float):
             raise TypeError('_value must be of type float')
 
         super(AtomicFloat, self).__setattr__(name, value)

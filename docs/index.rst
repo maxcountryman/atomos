@@ -48,3 +48,20 @@ API
 
 .. autoclass:: atomos.atomic.AtomicFloat
     :members:
+
+API Multiprocessing
+===================
+.. autoclass:: atomos.multiprocessing.atomic.AtomicReference
+    :members:
+
+.. autoclass:: atomos.multiprocessing.atomic.AtomicBoolean
+    :members:
+
+.. autoclass:: atomos.multiprocessing.atomic.AtomicInteger
+    :members:
+
+.. autoclass:: atomos.multiprocessing.atomic.AtomicLong
+    :members:
+
+.. autoclass:: atomos.multiprocessing.atomic.AtomicFloat
+    :members:

@@ -4,6 +4,7 @@ tests.test_util
 '''
 
 import threading
+import multiprocessing
 
 import atomos.util
 
@@ -90,3 +91,61 @@ def test_readers_writer_lock(acquire_shared_count=10):
 
     assert t.is_alive() is False
     assert lock._reader_count == 1
+
+
+def test_readers_writer_lock_multiprocessing(acquire_shared_count=10):
+    lock = atomos.util.ReadersWriterLockMultiprocessing()
+
+    for _ in range(acquire_shared_count):
+        lock.shared.acquire()
+
+    assert lock._reader_count.value == acquire_shared_count
+
+    # Cannot acquire an exclusive lock with active readers.
+    p = multiprocessing.Process(target=lock.exclusive.acquire)
+    p.start()
+
+    p.join(1.0)
+
+    assert p.is_alive() is True
+
+    for _ in range(acquire_shared_count):
+        lock.shared.release()
+
+    assert lock._reader_count.value == 0
+
+    p.join()
+
+    assert p.is_alive() is False
+
+    # Cannot acquire an exclusive lock with an active writer. (This was
+    # acquired in the above process.
+    p = multiprocessing.Process(target=lock.exclusive.acquire)
+    p.start()
+
+    p.join(1.0)
+
+    assert p.is_alive() is True
+
+    # Release the original acquisition.
+    lock.exclusive.release()
+
+    p.join()
+
+    assert p.is_alive() is False
+
+    # Cannot acquire a shared lock with an active writer. (This was acquired
+    # in the above process.)
+    p = multiprocessing.Process(target=lock.shared.acquire)
+    p.start()
+
+    p.join(1.0)
+
+    assert p.is_alive() is True
+
+    lock.exclusive.release()
+
+    p.join()
+
+    assert p.is_alive() is False
+    assert lock._reader_count.value == 1

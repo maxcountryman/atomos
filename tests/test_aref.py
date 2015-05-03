@@ -2,7 +2,7 @@
 '''
 tests.test_aref
 '''
-
+import six
 import pytest
 
 import atomos.atom
@@ -24,7 +24,7 @@ def test_aref_add_watch(aref):
     aref.add_watch('foo', watch)
 
     assert 'foo' in aref.get_watches()
-    assert watch in aref.get_watches().itervalues()
+    assert watch in six.itervalues(aref.get_watches())
 
 
 def test_aref_remove_watch(aref):
@@ -35,7 +35,7 @@ def test_aref_remove_watch(aref):
     aref.remove_watch('foo')
 
     assert 'foo' not in aref.get_watches()
-    assert watch not in aref.get_watches().itervalues()
+    assert watch not in six.itervalues(aref.get_watches())
 
 
 def test_aref_notify_watches(aref):
