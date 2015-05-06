@@ -33,19 +33,31 @@ class _AtomicReference(ThreadedAtomicReference):
     def __repr__(self):
         return util.repr(__name__, self, self._value)
 
+    def _proxy_value(self):
+        return self._value
+
 
 class AtomicManager(multiprocessing.managers.BaseManager):
     pass
 
 
-AtomicManager.register('AtomicReference', _AtomicReference)
+AtomicManager.register('AtomicReference',
+                       _AtomicReference,
+                       exposed=['get',
+                                'set',
+                                'get_and_set',
+                                'compare_and_set',
+                                '_proxy_value',
+                                '__repr__'])
 
-# HACK.
+# HACK: This is a bit of a hack. Essentially we need to run a manager which
+# specifically exposes the multiprocessing version of AtomicReference. If we
+# don't do this then memory cannot be shared between processes.
 _started = False
 if not _started:
-    manager = AtomicManager()
-    manager.start()
-    AtomicReference = manager.AtomicReference
+    _manager = AtomicManager()
+    _manager.start()
+    AtomicReference = _manager.AtomicReference
     _started = True
 
 
