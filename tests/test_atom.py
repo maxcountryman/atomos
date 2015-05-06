@@ -21,6 +21,7 @@ def test_atom_deref(atom):
 
 def test_atom_swap(atom):
     def update_state(cur_state, k, v):
+        cur_state = cur_state.copy()
         cur_state[k] = v
         return cur_state
 

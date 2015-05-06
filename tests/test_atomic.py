@@ -80,3 +80,36 @@ def test_concurrent_atomic_int(thread_count=10, loop_count=1000):
         t.join()
 
     assert atomic_int.get() == thread_count * loop_count
+
+
+def test_concurrent_atomic_ref(thread_count=10, loop_count=10000):
+    atomic_ref = atomos.atomic.AtomicReference({'count': 0})
+    assert atomic_ref.get() == {'count': 0}
+
+    def update(d):
+        # N.B. A mutable object should be copied such that the update function
+        # does not change the original object in memory. Failure to do so will
+        # cause unexpected results!
+        d = d.copy()
+        d['count'] += 1
+        return d
+
+    def inc_atomic_ref():
+        for _ in range(loop_count):
+            while True:
+                oldval = atomic_ref.get()
+                newval = update(oldval)
+                is_set = atomic_ref.compare_and_set(oldval, newval)
+                if is_set:
+                    break
+
+    threads = []
+    for _ in range(thread_count):
+        t = threading.Thread(target=inc_atomic_ref)
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    assert atomic_ref.get()['count'] == thread_count * loop_count
