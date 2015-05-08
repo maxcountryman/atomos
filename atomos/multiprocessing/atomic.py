@@ -7,6 +7,7 @@ Atomic primitives multiprocessing.
 
 import types
 import ctypes
+import multiprocessing.managers
 from multiprocessing import Value
 
 import six
@@ -18,7 +19,7 @@ if six.PY3:
     long = int
 
 
-class AtomicReference(ThreadedAtomicReference):
+class _AtomicReference(ThreadedAtomicReference):
     '''
     A reference to an object which allows atomic manipulation semantics.
 
@@ -26,8 +27,38 @@ class AtomicReference(ThreadedAtomicReference):
     be manipulated atomically.
     '''
     def __init__(self, value=None):
-        super(AtomicReference, self).__init__(value=value)
+        super(_AtomicReference, self).__init__(value=value)
         self._lock = util.ReadersWriterLockMultiprocessing()
+
+    def __repr__(self):
+        return util.repr(__name__, self, self._value)
+
+    def _proxy_value(self):
+        return self._value
+
+
+class AtomicManager(multiprocessing.managers.BaseManager):
+    pass
+
+
+AtomicManager.register('AtomicReference',
+                       _AtomicReference,
+                       exposed=['get',
+                                'set',
+                                'get_and_set',
+                                'compare_and_set',
+                                '_proxy_value',
+                                '__repr__'])
+
+# HACK: This is a bit of a hack. Essentially we need to run a manager which
+# specifically exposes the multiprocessing version of AtomicReference. If we
+# don't do this then memory cannot be shared between processes.
+_started = False
+if not _started:
+    _manager = AtomicManager()
+    _manager.start()
+    AtomicReference = _manager.AtomicReference
+    _started = True
 
 
 class AtomicCtypesReference(object):

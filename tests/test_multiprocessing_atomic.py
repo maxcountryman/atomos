@@ -79,3 +79,33 @@ def test_concurrent_atomic_int(process_count=10, loop_count=1000):
         p.join()
 
     assert atomic_int.get() == process_count * loop_count
+
+
+def test_concurrent_atomic_ref(process_count=10, loop_count=1000):
+    atomic_ref = atomos.multiprocessing.atomic.AtomicReference({'count': 0})
+    assert atomic_ref.get() == {'count': 0}
+
+    def update(d):
+        d = d.copy()
+        d['count'] += 1
+        return d
+
+    def inc_atomic_ref():
+        for _ in range(loop_count):
+            while True:
+                oldval = atomic_ref.get()
+                newval = update(oldval)
+                is_set = atomic_ref.compare_and_set(oldval, newval)
+                if is_set:
+                    break
+
+    processes = []
+    for _ in range(process_count):
+        p = Process(target=inc_atomic_ref)
+        processes.append(p)
+        p.start()
+
+    for p in processes:
+        p.join()
+
+    assert atomic_ref.get()['count'] == process_count * loop_count
