@@ -7,19 +7,19 @@ Atomic primitives multiprocessing.
 
 import types
 import ctypes
+import multiprocessing
 import multiprocessing.managers
-from multiprocessing import Value
 
 import six
 
 import atomos.util as util
-from atomos.atomic import AtomicReference as ThreadedAtomicReference
+import atomos.atomic as atomic
 
 if six.PY3:
     long = int
 
 
-class _AtomicReference(ThreadedAtomicReference):
+class _AtomicReference(atomic.AtomicReference):
     '''
     A reference to an object which allows atomic manipulation semantics.
 
@@ -75,11 +75,12 @@ class AtomicCtypesReference(object):
         '''
         Atomic reference
 
-        :param typecode_or_type: The type of object allocated from shared memory.
+        :param typecode_or_type: The type of object allocated from shared
+            memory.
         :param value: The default value.
         '''
         self._typecode_or_type = typecode_or_type
-        self._reference = Value(self._typecode_or_type, value)
+        self._reference = multiprocessing.Value(self._typecode_or_type, value)
 
     def __repr__(self):
         return util.repr(__name__, self, self._reference)
