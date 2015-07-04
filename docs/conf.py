@@ -45,17 +45,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Atomos'
-copyright = u'2014, Max Countryman'
+copyright = u'2015, Max Countryman'
 
-module_path = os.path.join(os.path.dirname(__file__),
-                           '../atomos',
-                           '__about__.py')
-module_path = os.path.abspath(module_path)
-version_line = filter(lambda l: l.startswith('__version_info__'),
-                      open(module_path))[0]
-
-__version__ = '.'.join(eval(version_line.split('__version_info__ = ')[-1]))
-
+from atomos.__about__ import __version__
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
