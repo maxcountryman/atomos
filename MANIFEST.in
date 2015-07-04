@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+exclude Makefile
+exclude tox.ini
+prune docs
+prune tests

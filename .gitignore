@@ -31,7 +31,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 .tox/
-.coverage
+.coverage*
 .cache
 nosetests.xml
 coverage.xml
@@ -44,3 +44,4 @@ docs/_build/
 
 # vim
 *.swp
+*.swo
