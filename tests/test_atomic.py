@@ -5,6 +5,7 @@ tests.test_atomic
 
 import multiprocessing
 import threading
+import ctypes
 
 import pytest
 
@@ -23,9 +24,10 @@ class TestNumberT(atomos.atomic.AtomicNumber):
         self._value = value
 
 
-class TestNumberP(atomos.atomic.AtomicNumber):
+class TestNumberP(atomos.multiprocessing.atomic.AtomicNumber):
     def __init__(self, value=0):
-        super(TestNumberP, self).__init__()
+        super(TestNumberP, self).__init__(typecode_or_type=ctypes.c_int,
+                                          value=value)
         self._value = value
 
 
