@@ -64,7 +64,7 @@ class AtomicReference(object):
 
         :param expect: The expected current value.
         :param update: The value to set if and only if `expect` equals the
-        current value.
+            current value.
         '''
         with self._lock.exclusive:
             if self._value == expect:

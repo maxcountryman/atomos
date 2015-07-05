@@ -46,8 +46,9 @@ class ARef(object):
 
         :param key: The key for this watch.
         :param fn: The value for this watch, should be a function. Note that
-        this function will be passed values which should not be mutated wihtout
-        copying as other watches may in turn be passed the same reference!
+            this function will be passed values which should not be mutated
+            wihtout copying as other watches may in turn be passed the same 
+            eference!
         '''
         self._watches[key] = fn
 
@@ -156,8 +157,9 @@ class Atom(ARef):
         of the atom. Returns the new value.
 
         :param fn: A function which will be passed the current state. Should
-        return a new state. This absolutely MUST NOT mutate the reference to
-        the current state! If it does, this function map loop indefinitely.
+            return a new state. This absolutely *MUST NOT* mutate the
+            reference to the current state! If it does, this function may loop
+            indefinitely.
         :param \*args: Arguments to be passed to `fn`.
         :param \*\*kwargs: Keyword arguments to be passed to `fn`.
         '''
@@ -187,7 +189,7 @@ class Atom(ARef):
 
         :param oldval: The old expected value.
         :param newval: The new value which will be set if and only if `oldval`
-        equals the current value.
+            equals the current value.
         '''
         ret = self._state.compare_and_set(oldval, newval)
         if ret:
