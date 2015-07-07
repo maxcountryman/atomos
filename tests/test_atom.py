@@ -39,7 +39,7 @@ def test_atom_swap(atom):
 
 def test_atom_reset(atom):
     atom, _ = atom
-    atom.reset('foo')
+    assert atom.reset('foo') == 'foo'
     assert atom.deref() == 'foo'
 
 

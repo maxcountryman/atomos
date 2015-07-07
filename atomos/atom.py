@@ -172,14 +172,14 @@ class Atom(ARef):
 
     def reset(self, newval):
         '''
-        Resets the atom's value to `newval`, returning its old value.
+        Resets the atom's value to `newval`, returning `newval`.
 
         :param newval: The new value to set.
         '''
         oldval = self._state.get()
         self._state.set(newval)
         self.notify_watches(oldval, newval)
-        return oldval
+        return newval
 
     def compare_and_set(self, oldval, newval):
         '''
