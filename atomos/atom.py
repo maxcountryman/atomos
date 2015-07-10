@@ -83,8 +83,8 @@ class Atom(ARef):
     Atoms store mutable state and provide thread-safe methods for retrieving
     and altering it. This is useful in multi-threaded contexts or any time an
     application makes use of shared mutable state. By using an atom, it is
-    possible to ensure that the read and write operations are always
-    consistent.
+    possible to ensure that read values are always consistent and that write
+    values do not yield unexpected state (e.g. data loss).
 
     For example, if an application uses a dictionary to store state, using an
     atom will guarantee that the dictionary is never in an inconsistent state
@@ -92,9 +92,10 @@ class Atom(ARef):
 
         >>> state = Atom({'active_conns': 0, 'clients': set([])})
         >>> def new_client(cur_state, client):
-        ...     cur_state['clients'].add(client)
-        ...     cur_state['active_conns'] += 1
-        ...     return cur_state
+        ...     new_state = cur_state.copy()
+        ...     new_state['clients'].add(client)
+        ...     new_state['active_conns'] += 1
+        ...     return new_state
         >>> state.swap(new_client, 'foo')
 
     In the above example we use an atom to store state about connections. Our
@@ -107,8 +108,8 @@ class Atom(ARef):
     be changed atomically. Atoms enable atomic semantics for such objects.
 
     Because atoms are themselves refs and inherit from `ARef`, it is also
-    possible to add watches to them. Watches can be thought of callbacks which
-    are invoked when the atom's state changes.
+    possible to add watches to them. Watches can be thought of as callbacks
+    which are invoked when the atom's state changes.
 
     For example, if we would like to log each time a client connects, we can
     write a watch that will be responsible for this and then add it to the
@@ -128,7 +129,7 @@ class Atom(ARef):
     application, a proper logging facility should be preferred over print.
 
     Watches are keyed by the first value passed to `add_watch` and are invoked
-    whenver the atom changes with the key, reference, old state, and new state
+    whenever the atom changes with the key, reference, old state, and new state
     as parameters.
 
     Note that watch functions may be called from multiple threads at once and
