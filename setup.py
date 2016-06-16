@@ -7,7 +7,7 @@ Atomic primitives for Python.
 
 Links
 `````
-* `documentation <https://atomos.readthedocs.org/en/latest/>`_
+* `documentation <https://atomos.readthedocs.io/en/latest/>`_
 * `development version <https://github.com/maxcountryman/atomos>`_
 '''
 
