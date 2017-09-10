@@ -25,6 +25,8 @@ var/
 .eggs
 MANIFEST
 .pydev
+.pydevproject
+*.eclipse*
 .project
 # Installer logs
 pip-log.txt
