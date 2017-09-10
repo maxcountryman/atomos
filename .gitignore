@@ -24,7 +24,8 @@ var/
 *.egg
 .eggs
 MANIFEST
-
+.pydev
+.project
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
