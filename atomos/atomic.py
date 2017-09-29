@@ -5,7 +5,6 @@ atomos.atomic
 Atomic primitives.
 '''
 
-import types
 
 import six
 
@@ -90,7 +89,7 @@ class AtomicBoolean(AtomicReference):
 
     def __setattr__(self, name, value):
         # Ensure the `value` attribute is always a bool.
-        if name == '_value' and not isinstance(value, types.BooleanType):
+        if name == '_value' and not isinstance(value, bool):
             raise TypeError('_value must be of type bool')
 
         super(AtomicBoolean, self).__setattr__(name, value)
@@ -192,7 +191,7 @@ class AtomicFloat(AtomicNumber):
 
     def __setattr__(self, name, value):
         # Ensure the `_value` attribute is always a float.
-        if name == '_value' and not isinstance(value, types.FloatType):
+        if name == '_value' and not isinstance(value, float):
             raise TypeError('_value must be of type float')
 
         super(AtomicFloat, self).__setattr__(name, value)
